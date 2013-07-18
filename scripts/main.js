@@ -38,6 +38,7 @@ var Setlist = {
                 
                 if(setlist.sets != "")
                 {
+                    $('#searchResult').append("<li><a href=\"" + setlist.url + "\">" + setlist.url + "</a></li>");
                     console.log(setlist);
                     var setlistId = setlist["@versionId"];
                     var artist = setlist.artist["@name"];
@@ -113,18 +114,4 @@ require([
 ], function(Models, Search, List) {
 
     Setlist.init(Models, Search, List);
-}); 
-
-
-
-/*playlist.load("tracks").done(function(loadedplaylist){                                
-                        loadedplaylist.tracks.clear;
-                        loadedplaylist.tracks.add(tracklist);
-
-                        tempPlaylistUri = loadedplaylist.uri
-
-                        var list = List.forPlaylist(playlist);
-                        $('#playlistContainer').empty();
-                        document.getElementById('playlistContainer').appendChild(list.node);
-                        list.init();                              
-                    });*/
+});
