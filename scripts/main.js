@@ -1,93 +1,130 @@
 var Setlist = {
-    __models: null,
-    __search: null,
-    __list: null,
-    __tracklist: [],
 
-    init: function(models, Search, List) {
-        $("#searchButton").live("click", function(event){
+    Models: null,
+    Search: null,
+    List: null,
+    playlistUri: null,
+    playlistView: null,
+
+    init: function(Models, Search, List) {
+        Setlist.Models = Models;
+        Setlist.Search = Search;
+        Setlist.List = List;
+
+        $("#searchButton").live("click", function(event) {
             event.preventDefault();
-
-            __models = models;
-            __search = Search;
-            __list = List;
-
             Setlist.search();
-        });    
+        });
+
+        Setlist.Models.Playlist.createTemporary(Date.now()).done(function(playlist) {    
+            playlistUri = playlist.uri;
+        });
     },
 
     search: function() {
-        $.get("http://api.setlist.fm/rest/0.1/search/setlists.json?p=1&artistName=" + $("#searchField").val(), function(data) {
-            var epicplaylist;
+        var query = $("#searchField").val();
+        var songs = [];
 
-            document.getElementById('searchResult').innerHtml = "";
-            console.log(document.getElementById('searchResult'));
-            $.each(data.setlists.setlist, function(index, setlist) {
-                var setlistId = setlist["@versionId"];
-                var artist = setlist.artist["@name"];
-                $("#searchResult").append("<li id=\"" + setlistId + "\">" 
-                    + setlist["@eventDate"] + " - " 
-                    + setlist["@tour"] + " - "
-                    + setlist.venue["@name"] + "</li>")
+        $.get("http://api.setlist.fm/rest/0.1/search/setlists.json?p=1&artistName=" + query, function(data) {
 
-                $("#" + setlistId).append("<ul id=\"setlist-" + setlistId + "\"></ul>");
+            console.log(data);
 
-                if(setlist.sets.set.length != null) {
-                    setlist.sets.set.forEach(function(set) {
-                        Setlist.getTracks(setlistId, artist, set);
-                    });
-                }
-                else {
-                    Setlist.getTracks(setlistId, artist, setlist.sets.set);
-                }
+            Setlist.clear();
+            $('#searchResult').empty();
 
-                var temp = __models.Playlist.createTemporary(Date.now()).done(function(playlist){
+            for(i=0;i<data.setlists.setlist.length;i++) {
+            //data.setlists.setlist.forEach(function(setlist) {
+                var setlist = data.setlists.setlist[i];
+                
+                if(setlist.sets != "")
+                {
+                    console.log(setlist);
+                    var setlistId = setlist["@versionId"];
+                    var artist = setlist.artist["@name"];
 
-                        // get tracks collection and add tracks to it
-                        playlist.load(['tracks']).done(function(){
-                            for (var i = 0; i < Setlist.__tracklist.length; i++) {
-                                playlist.tracks.add(Setlist.__tracklist[i]);
-                            }
+                    if(setlist.sets.set.length != null) {
+                        setlist.sets.set.forEach(function(set) {
+                            songs = $.merge(songs, set.song);
                         });
+                    }
+                    else {
+                        songs = setlist.sets.set.song;
+                    }
 
-                        epicplaylist = playlist;
+                    Setlist.getSpotifyTracks(artist, songs);
 
-                    }).fail(function() {
-                        console.log("Failed");
-                    });                                            
-                return false;
-            });
-
-            var list = __list.forPlaylist(epicplaylist);
-            document.getElementById('playlistContainer').innerHtml = "";
-            document.getElementById('playlistContainer').appendChild(list.node);
-            list.init();
-        })
-        .fail(function(data) { alert("error"); });
+                    break;
+                }                
+            //});
+            };
+        });
     },
 
-    getTracks: function(setlistId, artist, set) {        
-        set.song.forEach(function(song) {
-            var result = __search.search(artist + " " +song["@name"]);
-            result.tracks.snapshot(0, 1).done(function(snapshot) {
-                snapshot.loadAll('name').done(function(tracks) {
+    getSpotifyTracks: function(artist, songs) {
+        var result = Setlist.Search.search(artist + " " + songs[0]["@name"]);
+        console.log(artist + " " + songs[0]["@name"]);
+
+        result.tracks.snapshot(0, 1).done(function(snapshot) {
+            snapshot.loadAll('name').done(function(tracks) {
+                if(tracks.legth != 0) {
                     tracks.forEach(function(track) {
-                        Setlist.__tracklist.push(track);                        
-                        $("#setlist-" + setlistId).append("<li>" + song["@name"] + " : " + track.name + " - " + track.uri + "</li>");
+                        Setlist.addTracktoPlaylist(track.uri);
+                        console.log(songs[0]["@name"] + " : " + track.name + " - " + track.uri);                        
                     });
-                });
+                }
+
+                songs.splice(0,1);
+                if(songs.length > 0) {
+                    Setlist.getSpotifyTracks(artist ,songs);
+                }
+                else {
+                    Setlist.showSpotifyPlaylist();
+                }
+
             });
+        });  
+    },
+
+    showSpotifyPlaylist: function(){
+        document.getElementById('playlistContainer').appendChild(playlistView.node);
+        playlistView.init();
+    },
+
+    addTracktoPlaylist: function(trackUri) {
+        Setlist.Models.Playlist.fromURI(playlistUri).load("tracks").done(function(playlist){
+            playlist.tracks.add(Setlist.Models.Track.fromURI(trackUri));
+            playlistView = Setlist.List.forPlaylist(playlist);
+        });
+    },
+
+    clear: function() {
+        $('#playlistContainer').empty();
+        Setlist.playlistView = null;
+        Setlist.Models.Playlist.fromURI(playlistUri).load("tracks").done(function(playlist){
+            playlist.tracks.clear();
         });
     }
 };
 
+require([
+  '$api/models',        
+  '$api/search#Search',
+  '$views/list#List'
+], function(Models, Search, List) {
 
-$(function () {
-    require([
-      '$api/models',        
-      '$api/search#Search',
-      '$views/list#List'
-    ], function(models, Search, List) {
-      Setlist.init(models, Search, List);
-    });
-});
+    Setlist.init(Models, Search, List);
+}); 
+
+
+
+/*playlist.load("tracks").done(function(loadedplaylist){                                
+                        loadedplaylist.tracks.clear;
+                        loadedplaylist.tracks.add(tracklist);
+
+                        tempPlaylistUri = loadedplaylist.uri
+
+                        var list = List.forPlaylist(playlist);
+                        $('#playlistContainer').empty();
+                        document.getElementById('playlistContainer').appendChild(list.node);
+                        list.init();                              
+                    });*/
