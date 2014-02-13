@@ -1,3 +1,69 @@
 html {
   overflow: auto;
 }
+
+body {
+	padding: 0;
+	margin: 0;
+	height: 100%;
+}
+
+#setlist {
+	width: 1000px;
+	margin: 0 auto;
+}
+
+#header {
+	height: 600px;
+	background-color: #000;
+	text-align: center;
+}
+
+#header img {
+	height: 600px;
+}
+
+#searchSetlist {
+	text-align: center;
+}
+
+#searchSetlist #searchField {
+	width: 600px;
+	height: 50px;
+	font-size: 25px;
+	padding: 0 10px;
+	border-radius: 15px;
+	border: 2px solid #ccc;
+	margin: 10px 0 5px 0;
+}
+
+#searchSetlist #searchSuggestion {
+	width: 620px;
+	font-size: 20px;
+	padding: 0;
+	background-color: #fff;
+	display: none;
+	color: #6E6E6E;
+	margin: 0 auto;
+	border-radius: 15px;
+	border: 2px solid #ccc;
+	text-align: left;
+	list-style-type: none;
+	overflow: hidden;
+}
+
+#searchSetlist #searchSuggestion li{
+	padding: 5px 10px;
+	border-bottom: 1px solid #ccc;
+}
+
+#searchSetlist #searchSuggestion li:last-child{
+	border-bottom: 0px;
+}
+
+#searchSetlist #searchSuggestion li:hover{
+	background-color: #F2F2F2;
+	cursor: pointer;
+}
+
+

@@ -14,18 +14,24 @@
     <!-- If you are using the preview SDK for webplayer then uncomment the script below -->
     <!--script src="http://d1hza3lyffsoht.cloudfront.net/preview-sdk/bootstrap.js"></script-->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.min.js"></script>
+    <script src="scripts/main.js"></script>
   </head>
   <body>
-    <h1>Setlist</h1>
-    <form>
-        <input id="searchField" type="text" value="Iron Maiden"/>
-        <input type="submit" id="searchButton"/>
-        <script src="scripts/main.js"></script>
-    </form>
-    <h2></h2>    
-    <ul id="searchResult">
-    </ul>
-    <div id="playlistContainer">
+    <div id="setlist">
+        <div id="header">
+            <img src=""/>
+        </div>
+        <form id="searchSetlist">
+            <input id="searchField" type="text" placeholder="search for an artist"/>
+            <ul id="searchSuggestion">
+                <li>No results</li>
+            </ul>
+        </form>
+        <h2></h2>    
+        <ul id="searchResult">
+        </ul>
+        <div id="playlistContainer">
+        </div>
     </div>
   </body>
 </html>

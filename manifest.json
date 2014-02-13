@@ -36,20 +36,16 @@
     "api": "1.0.0",
     "views": "1.10.0"
   },
+   "RequiredPermissions": [
+    "http://api.setlist.fm",
+    "http://search.musicbrainz.org"
+  ],
   "SupportedDeviceClasses": [
     "Web",
     "Desktop"
   ],
   "SupportedLanguages": [
-    "de",
-    "en",
-    "es",
-    "es-419",
-    "fr",
-    "it",
-    "nl",
-    "pl",
-    "zh-Hant"
+    "en"
   ],
   "VendorIdentifier": "nl.q42"
 }
